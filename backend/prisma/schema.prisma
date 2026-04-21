@@ -1,0 +1,77 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// SCHEMES TABLE
+// Stores one row per government scheme
+// ─────────────────────────────────────────────
+model Scheme {
+  id              String   @id @default(uuid())
+  name            String
+  nameHi          String?  @map("name_hi")         // Hindi name
+  slug            String   @unique
+  category        String                             // "agriculture", "education", "housing"
+  ministry        String?
+  description     String   @db.Text
+  descriptionHi   String?  @map("description_hi") @db.Text
+  benefitSummary  String   @map("benefit_summary")
+  benefitSummaryHi String? @map("benefit_summary_hi")
+  benefitAmount   String?  @map("benefit_amount")  // "₹6000/year"
+  applicationUrl  String   @map("application_url")
+  isCentral       Boolean  @default(true) @map("is_central")
+  stateCode       String?  @map("state_code")       // null = all India
+  isActive        Boolean  @default(true) @map("is_active")
+  lastVerified    DateTime? @map("last_verified")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relation: one scheme has many eligibility rules
+  rules           EligibilityRule[]
+
+  @@map("schemes")
+}
+
+// ─────────────────────────────────────────────
+// ELIGIBILITY RULES TABLE
+// Each row = one condition for one scheme
+// ALL required rules must pass for a match
+// ─────────────────────────────────────────────
+model EligibilityRule {
+  id            String   @id @default(uuid())
+  schemeId      String   @map("scheme_id")
+  
+  // The user profile field to check
+  // e.g., "age", "annual_income", "caste", "occupation"
+  field         String
+  
+  // How to compare: "gte", "lte", "eq", "in", "between", "is_true"
+  operator      String
+  
+  // The threshold value (stored as JSON for flexibility)
+  // Examples:
+  //   gte age 18           → value: 18
+  //   lte income 200000    → value: 200000
+  //   in  caste [SC,ST]    → value: ["SC","ST"]
+  //   between age 18-40    → value: {"min": 18, "max": 40}
+  value         Json
+  
+  // Human-readable explanation of this rule
+  description   String
+  descriptionHi String?  @map("description_hi")
+  
+  // If false, rule is "nice to have" — won't block match
+  isRequired    Boolean  @default(true) @map("is_required")
+  
+  createdAt     DateTime @default(now()) @map("created_at")
+  
+  scheme        Scheme   @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+
+  @@map("eligibility_rules")
+}

@@ -1,0 +1,15 @@
+# Dependencies (ignores node_modules in root and all subdirectories)
+node_modules/
+
+# Environment files (ignores .env files in root and all subdirectories)
+.env
+.env.*
+!.env.example
+
+# Build outputs
+dist/
+build/
+
+# OS/IDE files
+.DS_Store
+.vscode/
