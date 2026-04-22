@@ -1,7 +1,7 @@
-// src/routes/eligibility.ts
+// backend/src/routes/eligibility.ts — REPLACE ENTIRELY
 
 import { Router, Request, Response } from 'express';
-import { prisma } from '../db/client';
+import { getSchemesFromCache } from '../engine/schemeCache';
 import { checkEligibility } from '../engine/evaluator';
 import { UserProfile, EligibilityResponse } from '../types';
 
@@ -9,33 +9,29 @@ const router = Router();
 
 // ─────────────────────────────────────────────────────────────────
 // POST /api/v1/eligibility/check
-// 
-// Body: UserProfile object
-// Returns: List of matched schemes with explanations
+// Phase 2: Returns full matches + potential + partial + missing fields
 // ─────────────────────────────────────────────────────────────────
 router.post('/check', async (req: Request, res: Response) => {
   try {
     const profile = req.body as UserProfile;
 
-    // ── VALIDATION ──────────────────────────────────────
-    // Check required fields are present
+    // ── Validation ───────────────────────────────────
     const requiredFields: (keyof UserProfile)[] = [
-      'age', 'gender', 'state', 'caste', 'occupation', 'annualIncome'
+      'age', 'gender', 'state', 'caste', 'occupation', 'annualIncome',
     ];
 
-    const missingFields = requiredFields.filter(
-      field => profile[field] === undefined || profile[field] === null || profile[field] === ''
+    const missingRequired = requiredFields.filter(
+      f => profile[f] === undefined || profile[f] === null || profile[f] === '',
     );
 
-    if (missingFields.length > 0) {
+    if (missingRequired.length > 0) {
       return res.status(400).json({
         success: false,
         error: 'Missing required fields',
-        missingFields,
+        missingFields: missingRequired,
       });
     }
 
-    // ── BASIC TYPE VALIDATION ─────────────────────────
     if (typeof profile.age !== 'number' || profile.age < 0 || profile.age > 120) {
       return res.status(400).json({ success: false, error: 'Invalid age value' });
     }
@@ -44,30 +40,29 @@ router.post('/check', async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'Invalid annualIncome value' });
     }
 
-    // ── FETCH ALL ACTIVE SCHEMES WITH THEIR RULES ─────
-    // We fetch once and evaluate in-memory for speed
-    const schemes = await prisma.scheme.findMany({
-      where: { isActive: true },
-      include: { rules: true },
-    });
+    // ── Run engine ───────────────────────────────────
+    const schemes = await getSchemesFromCache();
+    const result  = checkEligibility(schemes, profile);
 
-    // ── RUN ELIGIBILITY ENGINE ─────────────────────────
-    const matchedSchemes = checkEligibility(schemes, profile);
-
-    // ── BUILD RESPONSE ─────────────────────────────────
     const response: EligibilityResponse = {
-      success: true,
+      success:             true,
       profile,
       totalSchemesChecked: schemes.length,
-      matchedCount: matchedSchemes.length,
-      schemes: matchedSchemes,
-      checkedAt: new Date().toISOString(),
+      matchedCount:        result.matches.length,
+      potentialCount:      result.potentialMatches.length,
+      partialCount:        result.partialMatches.length,
+      schemes:             result.matches,
+      potentialMatches:    result.potentialMatches,
+      partialMatches:      result.partialMatches,
+      missingProfileFields: result.missingFields,
+      profileCompleteness: result.profileCompleteness,
+      checkedAt:           new Date().toISOString(),
     };
 
     return res.status(200).json(response);
 
   } catch (error) {
-    console.error('Eligibility check error:', error);
+    console.error('[/check] Error:', error);
     return res.status(500).json({
       success: false,
       error: 'Internal server error. Please try again.',
@@ -77,30 +72,43 @@ router.post('/check', async (req: Request, res: Response) => {
 
 // ─────────────────────────────────────────────────────────────────
 // GET /api/v1/eligibility/schemes
-// Returns all active schemes (useful for debugging / admin)
 // ─────────────────────────────────────────────────────────────────
 router.get('/schemes', async (_req: Request, res: Response) => {
   try {
-    const schemes = await prisma.scheme.findMany({
-      where: { isActive: true },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        category: true,
-        benefitAmount: true,
-        _count: { select: { rules: true } },
-      },
-      orderBy: { category: 'asc' },
-    });
-
+    const schemes = await getSchemesFromCache();
     return res.status(200).json({
       success: true,
-      count: schemes.length,
-      schemes,
+      count:   schemes.length,
+      schemes: schemes.map(s => ({
+        id:           s.id,
+        name:         s.name,
+        slug:         s.slug,
+        category:     s.category,
+        benefitAmount: s.benefitAmount,
+        ruleCount:    s.rules.length,
+      })),
     });
   } catch (error) {
     return res.status(500).json({ success: false, error: 'Failed to fetch schemes' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────
+// GET /api/v1/eligibility/scheme/:slug
+// NEW in Phase 2: Full detail for one scheme
+// ─────────────────────────────────────────────────────────────────
+router.get('/scheme/:slug', async (req: Request, res: Response) => {
+  try {
+    const schemes = await getSchemesFromCache();
+    const scheme  = schemes.find(s => s.slug === req.params.slug);
+
+    if (!scheme) {
+      return res.status(404).json({ success: false, error: 'Scheme not found' });
+    }
+
+    return res.status(200).json({ success: true, scheme });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: 'Failed to fetch scheme' });
   }
 });
 

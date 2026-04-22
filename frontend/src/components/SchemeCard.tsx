@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { MatchedScheme } from '@/types';
 import { CategoryBadge } from './CategoryBadge';
 import { ChevronDown, ExternalLink, CheckCircle2, IndianRupee } from 'lucide-react';
+import { ConfidenceBadge } from './ConfidenceBadge';
+
 
 interface Props {
   scheme: MatchedScheme;
@@ -39,34 +41,31 @@ export function SchemeCard({ scheme, index, isHindi }: Props) {
 
         <div className="p-5">
           {/* Header Row */}
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <CategoryBadge category={scheme.category} />
-                {scheme.isCentral && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-saffron-500/10 text-saffron-400 border border-saffron-500/20 font-medium">
-                    Central
-                  </span>
-                )}
-              </div>
-              <h3 className={`
-                font-semibold text-white leading-snug
-                ${isHindi && scheme.nameHi ? 'font-hindi text-base' : 'text-[15px]'}
-              `}>
-                {name}
-              </h3>
-            </div>
-
-            {/* Benefit amount pill */}
-            {scheme.benefitAmount && (
-              <div className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/20">
-                <IndianRupee className="w-3 h-3 text-green-400" />
-                <span className="text-xs font-semibold text-green-400 whitespace-nowrap">
-                  {scheme.benefitAmount}
-                </span>
-              </div>
-            )}
-          </div>
+          {/* Header Row */}
+<div className="flex items-start justify-between gap-3 mb-3">
+  <div className="flex-1 min-w-0">
+    <div className="flex flex-wrap items-center gap-2 mb-2">
+      <CategoryBadge category={scheme.category} />
+      {scheme.isCentral && (
+        <span className="text-xs px-2 py-0.5 rounded-full bg-saffron-500/10 text-saffron-400 border border-saffron-500/20 font-medium">
+          Central
+        </span>
+      )}
+      <ConfidenceBadge score={scheme.confidenceScore} />  {/* ← NEW */}
+    </div>
+    <h3 className={`font-semibold text-white leading-snug ${isHindi && scheme.nameHi ? 'font-hindi text-base' : 'text-[15px]'}`}>
+      {name}
+    </h3>
+  </div>
+  {scheme.benefitAmount && (
+    <div className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/20">
+      <IndianRupee className="w-3 h-3 text-green-400" />
+      <span className="text-xs font-semibold text-green-400 whitespace-nowrap">
+        {scheme.benefitAmount}
+      </span>
+    </div>
+  )}
+</div>
 
           {/* Benefit Summary */}
           <p className={`

@@ -738,6 +738,248 @@ async function main() {
     },
   });
 
+  // ─────────────────────────────────────────────────────────────────
+// ADD THESE 10 SCHEMES to the existing seed.ts
+// paste before the final console.log line
+// ─────────────────────────────────────────────────────────────────
+
+  // SCHEME 16: PM Suraksha Bima Yojana (Accident Insurance)
+  const pmsby = await prisma.scheme.create({
+    data: {
+      name: 'PM Suraksha Bima Yojana',
+      nameHi: 'प्रधानमंत्री सुरक्षा बीमा योजना',
+      slug: 'pm-suraksha-bima-yojana',
+      category: 'social_security',
+      ministry: 'Ministry of Finance',
+      description: 'Accidental death and disability insurance at just ₹20/year. Provides ₹2 lakh cover for accidental death or permanent total disability.',
+      descriptionHi: 'मात्र ₹20/वर्ष में दुर्घटना बीमा। मृत्यु या स्थायी विकलांगता पर ₹2 लाख का कवर।',
+      benefitSummary: '₹2 lakh accident insurance at just ₹20/year',
+      benefitSummaryHi: 'मात्र ₹20/वर्ष में ₹2 लाख का दुर्घटना बीमा',
+      benefitAmount: '₹2,00,000 on accident',
+      applicationUrl: 'https://jansuraksha.gov.in',
+      isCentral: true,
+      lastVerified: new Date('2024-12-01'),
+    },
+  });
+  await prisma.eligibilityRule.createMany({ data: [
+    { schemeId: pmsby.id, field: 'age', operator: 'between', value: { min: 18, max: 70 }, description: 'Age must be 18–70 years', descriptionHi: 'आयु 18–70 वर्ष के बीच होनी चाहिए', isRequired: true },
+    { schemeId: pmsby.id, field: 'hasBankAccount', operator: 'is_true', value: true, description: 'Must have a savings bank account', descriptionHi: 'बचत बैंक खाता होना चाहिए', isRequired: true },
+  ]});
+
+  // SCHEME 17: Sukanya Samriddhi Yojana
+  const ssy = await prisma.scheme.create({
+    data: {
+      name: 'Sukanya Samriddhi Yojana',
+      nameHi: 'सुकन्या समृद्धि योजना',
+      slug: 'sukanya-samriddhi-yojana',
+      category: 'women_welfare',
+      ministry: 'Ministry of Finance',
+      description: 'High-interest savings scheme for girl child education and marriage. Account can be opened for girls under 10 years. Interest rate ~8.2% p.a.',
+      descriptionHi: 'बालिका की शिक्षा और विवाह के लिए उच्च-ब्याज बचत योजना। ~8.2% वार्षिक ब्याज।',
+      benefitSummary: 'High-interest savings account for girl child (8.2% interest)',
+      benefitSummaryHi: 'बालिका के लिए 8.2% ब्याज वाला बचत खाता',
+      benefitAmount: '8.2% interest + tax exemption',
+      applicationUrl: 'https://www.nsiindia.gov.in',
+      isCentral: true,
+      lastVerified: new Date('2024-12-01'),
+    },
+  });
+  await prisma.eligibilityRule.createMany({ data: [
+    { schemeId: ssy.id, field: 'gender', operator: 'eq', value: 'female', description: 'Must be a girl child (account opened by parent/guardian)', descriptionHi: 'बालिका के लिए (माता-पिता द्वारा खोला जाता है)', isRequired: true },
+    { schemeId: ssy.id, field: 'age', operator: 'lte', value: 10, description: 'Girl must be under 10 years of age', descriptionHi: 'बालिका की आयु 10 वर्ष से कम होनी चाहिए', isRequired: true },
+  ]});
+
+  // SCHEME 18: PM Vishwakarma Yojana
+  const vishwakarma = await prisma.scheme.create({
+    data: {
+      name: 'PM Vishwakarma Yojana',
+      nameHi: 'प्रधानमंत्री विश्वकर्मा योजना',
+      slug: 'pm-vishwakarma-yojana',
+      category: 'skill_employment',
+      ministry: 'Ministry of MSME',
+      description: 'Support scheme for traditional artisans and craftsmen (blacksmiths, carpenters, potters, etc.). Provides free skill training, ₹15,000 toolkit grant, and collateral-free loan at 5% interest.',
+      descriptionHi: 'पारंपरिक कारीगरों के लिए योजना। मुफ्त प्रशिक्षण, ₹15,000 टूलकिट अनुदान, 5% ब्याज पर ऋण।',
+      benefitSummary: 'Free training + ₹15,000 toolkit + loan at 5% for artisans',
+      benefitSummaryHi: 'कारीगरों के लिए मुफ्त प्रशिक्षण + ₹15,000 टूलकिट + 5% ऋण',
+      benefitAmount: '₹15,000 toolkit + ₹3L loan at 5%',
+      applicationUrl: 'https://pmvishwakarma.gov.in',
+      isCentral: true,
+      lastVerified: new Date('2024-12-01'),
+    },
+  });
+  await prisma.eligibilityRule.createMany({ data: [
+    { schemeId: vishwakarma.id, field: 'occupation', operator: 'in', value: ['self_employed', 'worker', 'other'], description: 'Must be a traditional artisan or craftsperson', descriptionHi: 'पारंपरिक कारीगर या शिल्पकार होना चाहिए', isRequired: true },
+    { schemeId: vishwakarma.id, field: 'age', operator: 'gte', value: 18, description: 'Must be at least 18 years old', descriptionHi: 'कम से कम 18 वर्ष की आयु होनी चाहिए', isRequired: true },
+    { schemeId: vishwakarma.id, field: 'annualIncome', operator: 'lte', value: 300000, description: 'Annual income must be ₹3,00,000 or less', descriptionHi: 'वार्षिक आय ₹3,00,000 या उससे कम होनी चाहिए', isRequired: true },
+  ]});
+
+  // SCHEME 19: Kisan Credit Card
+  const kcc = await prisma.scheme.create({
+    data: {
+      name: 'Kisan Credit Card (KCC)',
+      nameHi: 'किसान क्रेडिट कार्ड',
+      slug: 'kisan-credit-card',
+      category: 'agriculture',
+      ministry: 'Ministry of Agriculture and Farmers Welfare',
+      description: 'Flexible credit for farmers to meet agricultural expenses, purchase of inputs, and post-harvest needs. Short-term loans at 4% interest rate (after subsidy).',
+      descriptionHi: 'किसानों के लिए खेती के खर्च और जरूरतों के लिए आसान ऋण। 4% ब्याज दर पर।',
+      benefitSummary: 'Flexible crop loan at 4% interest rate',
+      benefitSummaryHi: '4% ब्याज पर फसल ऋण',
+      benefitAmount: 'Loan up to ₹3 lakh at 4%/year',
+      applicationUrl: 'https://pmkisan.gov.in/KCC.aspx',
+      isCentral: true,
+      lastVerified: new Date('2024-12-01'),
+    },
+  });
+  await prisma.eligibilityRule.createMany({ data: [
+    { schemeId: kcc.id, field: 'occupation', operator: 'eq', value: 'farmer', description: 'Applicant must be a farmer', descriptionHi: 'आवेदक किसान होना चाहिए', isRequired: true },
+    { schemeId: kcc.id, field: 'age', operator: 'between', value: { min: 18, max: 75 }, description: 'Age must be 18–75 years', descriptionHi: 'आयु 18–75 वर्ष के बीच होनी चाहिए', isRequired: true },
+    { schemeId: kcc.id, field: 'hasBankAccount', operator: 'is_true', value: true, description: 'Must have a bank account', descriptionHi: 'बैंक खाता होना चाहिए', isRequired: true },
+  ]});
+
+  // SCHEME 20: National Apprenticeship Promotion Scheme
+  const naps = await prisma.scheme.create({
+    data: {
+      name: 'National Apprenticeship Promotion Scheme (NAPS)',
+      nameHi: 'राष्ट्रीय प्रशिक्षुता प्रोत्साहन योजना',
+      slug: 'national-apprenticeship-promotion-scheme',
+      category: 'skill_employment',
+      ministry: 'Ministry of Skill Development and Entrepreneurship',
+      description: 'Apprenticeship training with industry stipend support. Government shares 25% of stipend with employers. Provides industry-relevant hands-on training.',
+      descriptionHi: 'उद्योग में प्रशिक्षुता प्रशिक्षण। सरकार नियोक्ता के साथ 25% वजीफा साझा करती है।',
+      benefitSummary: 'Paid apprenticeship training in industry (stipend + certificate)',
+      benefitSummaryHi: 'उद्योग में वेतन सहित प्रशिक्षुता (वजीफा + प्रमाणपत्र)',
+      benefitAmount: '₹1,500–₹9,000/month stipend',
+      applicationUrl: 'https://www.apprenticeshipindia.gov.in',
+      isCentral: true,
+      lastVerified: new Date('2024-12-01'),
+    },
+  });
+  await prisma.eligibilityRule.createMany({ data: [
+    { schemeId: naps.id, field: 'age', operator: 'between', value: { min: 14, max: 35 }, description: 'Age must be 14–35 years', descriptionHi: 'आयु 14–35 वर्ष के बीच होनी चाहिए', isRequired: true },
+    { schemeId: naps.id, field: 'occupation', operator: 'in', value: ['student', 'unemployed', 'worker'], description: 'Should be a student, unemployed youth, or unskilled worker', descriptionHi: 'छात्र, बेरोजगार युवा, या अकुशल कामगार होना चाहिए', isRequired: true },
+  ]});
+
+  // SCHEME 21: PM SVANidhi (Street Vendors)
+  const svanidhi = await prisma.scheme.create({
+    data: {
+      name: 'PM SVANidhi — Street Vendor Loan',
+      nameHi: 'PM SVANidhi — स्ट्रीट वेंडर ऋण',
+      slug: 'pm-svanidhi',
+      category: 'business',
+      ministry: 'Ministry of Housing and Urban Affairs',
+      description: 'Collateral-free working capital loans for street vendors. Start with ₹10,000, repay on time and get enhanced loans of ₹20,000 and ₹50,000.',
+      descriptionHi: 'फेरीवालों के लिए बिना जमानत ₹10,000 से शुरू होने वाला ऋण। समय पर चुकाएं और ₹50,000 तक पाएं।',
+      benefitSummary: 'Loan from ₹10,000 to ₹50,000 for street vendors',
+      benefitSummaryHi: 'फेरीवालों के लिए ₹10,000 से ₹50,000 तक ऋण',
+      benefitAmount: 'Loan ₹10,000 → ₹50,000 (progressive)',
+      applicationUrl: 'https://pmsvanidhi.mohua.gov.in',
+      isCentral: true,
+      lastVerified: new Date('2024-12-01'),
+    },
+  });
+  await prisma.eligibilityRule.createMany({ data: [
+    { schemeId: svanidhi.id, field: 'occupation', operator: 'in', value: ['self_employed', 'other'], description: 'Must be a street vendor or small trader', descriptionHi: 'फेरीवाला या छोटा व्यापारी होना चाहिए', isRequired: true },
+    { schemeId: svanidhi.id, field: 'age', operator: 'gte', value: 18, description: 'Must be at least 18 years old', descriptionHi: 'कम से कम 18 वर्ष की आयु होनी चाहिए', isRequired: true },
+    { schemeId: svanidhi.id, field: 'hasBankAccount', operator: 'is_true', value: true, description: 'Must have a bank account', descriptionHi: 'बैंक खाता होना चाहिए', isRequired: true },
+  ]});
+
+  // SCHEME 22: Antyodaya Anna Yojana (AAY)
+  const aay = await prisma.scheme.create({
+    data: {
+      name: 'Antyodaya Anna Yojana (AAY)',
+      nameHi: 'अंत्योदय अन्न योजना',
+      slug: 'antyodaya-anna-yojana',
+      category: 'food_security',
+      ministry: 'Ministry of Consumer Affairs, Food and Public Distribution',
+      description: 'Poorest-of-the-poor households get 35 kg of grain per month at ₹2/kg (wheat) and ₹3/kg (rice). Specifically targets the destitute.',
+      descriptionHi: 'सबसे गरीब परिवारों को प्रति माह 35 किग्रा अनाज ₹2/किग्रा (गेहूं) और ₹3/किग्रा (चावल) पर।',
+      benefitSummary: '35 kg grain/month at ₹2–3/kg for the poorest families',
+      benefitSummaryHi: 'सबसे गरीब परिवारों को 35 किग्रा अनाज ₹2-₹3/किग्रा',
+      benefitAmount: '35 kg/month at ₹2–3/kg',
+      applicationUrl: 'https://dfpd.gov.in',
+      isCentral: true,
+      lastVerified: new Date('2024-12-01'),
+    },
+  });
+  await prisma.eligibilityRule.createMany({ data: [
+    { schemeId: aay.id, field: 'isBplHousehold', operator: 'is_true', value: true, description: 'Must be from the poorest BPL or AAY household', descriptionHi: 'सबसे गरीब BPL या AAY परिवार से होना चाहिए', isRequired: true },
+    { schemeId: aay.id, field: 'annualIncome', operator: 'lte', value: 60000, description: 'Annual income must be ₹60,000 or less', descriptionHi: 'वार्षिक आय ₹60,000 या उससे कम होनी चाहिए', isRequired: true },
+    { schemeId: aay.id, field: 'hasRationCard', operator: 'is_true', value: true, description: 'Must have an AAY ration card', descriptionHi: 'AAY राशन कार्ड होना चाहिए', isRequired: true },
+  ]});
+
+  // SCHEME 23: Beti Bachao Beti Padhao
+  const bbbp = await prisma.scheme.create({
+    data: {
+      name: 'Beti Bachao Beti Padhao — Education Incentive',
+      nameHi: 'बेटी बचाओ बेटी पढ़ाओ — शिक्षा प्रोत्साहन',
+      slug: 'beti-bachao-beti-padhao',
+      category: 'women_welfare',
+      ministry: 'Ministry of Women and Child Development',
+      description: 'Cash incentives and scholarships for girl students to ensure school enrollment, attendance, and completion up to class 12.',
+      descriptionHi: 'बालिका छात्रों के लिए नकद प्रोत्साहन और छात्रवृत्ति। कक्षा 12 तक शिक्षा सुनिश्चित करने के लिए।',
+      benefitSummary: 'Cash incentive for girl child education and school completion',
+      benefitSummaryHi: 'बालिका शिक्षा के लिए नकद प्रोत्साहन',
+      benefitAmount: '₹2,000–₹5,000 at key milestones',
+      applicationUrl: 'https://wcd.nic.in/bbbp-schemes',
+      isCentral: true,
+      lastVerified: new Date('2024-12-01'),
+    },
+  });
+  await prisma.eligibilityRule.createMany({ data: [
+    { schemeId: bbbp.id, field: 'gender', operator: 'eq', value: 'female', description: 'Applicant must be a girl', descriptionHi: 'आवेदक बालिका होनी चाहिए', isRequired: true },
+    { schemeId: bbbp.id, field: 'age', operator: 'lte', value: 18, description: 'Must be 18 or younger (school-going age)', descriptionHi: 'आयु 18 वर्ष या उससे कम होनी चाहिए', isRequired: true },
+    { schemeId: bbbp.id, field: 'isCurrentlyStudying', operator: 'is_true', value: true, description: 'Must currently be enrolled in school', descriptionHi: 'वर्तमान में स्कूल में नामांकित होना चाहिए', isRequired: true },
+  ]});
+
+  // SCHEME 24: PM Surya Ghar Muft Bijli Yojana
+  const suryaGhar = await prisma.scheme.create({
+    data: {
+      name: 'PM Surya Ghar Muft Bijli Yojana',
+      nameHi: 'प्रधानमंत्री सूर्य घर मुफ्त बिजली योजना',
+      slug: 'pm-surya-ghar-yojana',
+      category: 'housing',
+      ministry: 'Ministry of New and Renewable Energy',
+      description: 'Free solar rooftop installation with 300 units free electricity per month. Central subsidy of ₹30,000–₹78,000 on installation cost.',
+      descriptionHi: 'मुफ्त सोलर रूफटॉप इंस्टॉलेशन। प्रति माह 300 यूनिट मुफ्त बिजली। ₹30,000–₹78,000 की सब्सिडी।',
+      benefitSummary: '300 units free electricity/month via rooftop solar + subsidy',
+      benefitSummaryHi: 'सोलर रूफटॉप से 300 यूनिट मुफ्त बिजली/माह + सब्सिडी',
+      benefitAmount: 'Up to ₹78,000 subsidy + free electricity',
+      applicationUrl: 'https://pmsuryaghar.gov.in',
+      isCentral: true,
+      lastVerified: new Date('2024-12-01'),
+    },
+  });
+  await prisma.eligibilityRule.createMany({ data: [
+    { schemeId: suryaGhar.id, field: 'annualIncome', operator: 'lte', value: 150000, description: 'Annual income must be ₹1,50,000 or less for full subsidy', descriptionHi: 'पूर्ण सब्सिडी के लिए वार्षिक आय ₹1,50,000 या उससे कम', isRequired: true },
+    { schemeId: suryaGhar.id, field: 'hasBankAccount', operator: 'is_true', value: true, description: 'Must have a bank account for subsidy transfer', descriptionHi: 'सब्सिडी हस्तांतरण के लिए बैंक खाता होना चाहिए', isRequired: true },
+  ]});
+
+  // SCHEME 25: Divyangjan Scholarship
+  const divyang = await prisma.scheme.create({
+    data: {
+      name: 'Scholarship for Students with Disabilities (Divyangjan)',
+      nameHi: 'दिव्यांग छात्रों के लिए छात्रवृत्ति',
+      slug: 'divyangjan-scholarship',
+      category: 'education',
+      ministry: 'Ministry of Social Justice and Empowerment',
+      description: 'Scholarship scheme for students with 40%+ disability. Covers tuition, maintenance allowance, and special allowances for disability-related aids.',
+      descriptionHi: '40%+ विकलांगता वाले छात्रों के लिए छात्रवृत्ति। ट्यूशन, रखरखाव, और सहायता अनुदान।',
+      benefitSummary: 'Full scholarship for disabled students (40%+ disability)',
+      benefitSummaryHi: 'दिव्यांग छात्रों के लिए पूर्ण छात्रवृत्ति (40%+ विकलांगता)',
+      benefitAmount: 'Up to ₹20,000/year + disability allowance',
+      applicationUrl: 'https://scholarships.gov.in',
+      isCentral: true,
+      lastVerified: new Date('2024-12-01'),
+    },
+  });
+  await prisma.eligibilityRule.createMany({ data: [
+    { schemeId: divyang.id, field: 'isDisabled', operator: 'is_true', value: true, description: 'Must have a certified disability', descriptionHi: 'प्रमाणित विकलांगता होनी चाहिए', isRequired: true },
+    { schemeId: divyang.id, field: 'disabilityPercentage', operator: 'gte', value: 40, description: 'Disability must be 40% or more', descriptionHi: 'विकलांगता 40% या अधिक होनी चाहिए', isRequired: true },
+    { schemeId: divyang.id, field: 'isCurrentlyStudying', operator: 'is_true', value: true, description: 'Must be currently enrolled in a course', descriptionHi: 'वर्तमान में किसी पाठ्यक्रम में नामांकित होना चाहिए', isRequired: true },
+    { schemeId: divyang.id, field: 'annualIncome', operator: 'lte', value: 250000, description: 'Annual family income must not exceed ₹2,50,000', descriptionHi: 'वार्षिक पारिवारिक आय ₹2,50,000 से अधिक नहीं होनी चाहिए', isRequired: true },
+  ]});
+
   await prisma.eligibilityRule.createMany({
     data: [
       {
@@ -761,8 +1003,8 @@ async function main() {
     ],
   });
 
-  console.log('✅ Seeded 15 schemes with eligibility rules');
-  console.log(`   Total schemes: 15`);
+  console.log('✅ Seeded 25 schemes with eligibility rules');
+  console.log(`   Total schemes: 25`);
 }
 
 main()

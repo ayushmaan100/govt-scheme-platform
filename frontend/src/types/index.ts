@@ -1,4 +1,7 @@
-// src/types/index.ts
+// src/types/index.ts — REPLACE ENTIRELY
+// (same as the backend types — copy them verbatim)
+
+export type RuleStatus = 'pass' | 'fail_hard' | 'fail_missing';
 
 export interface UserProfile {
   age: number;
@@ -21,6 +24,7 @@ export interface UserProfile {
 export interface RuleResult {
   field: string;
   operator: string;
+  status: RuleStatus;
   passed: boolean;
   description: string;
   descriptionHi?: string | null;
@@ -41,6 +45,38 @@ export interface MatchedScheme {
   ministry?: string | null;
   isCentral: boolean;
   matchedRules: RuleResult[];
+  confidenceScore: number;
+}
+
+export interface PotentialMatch {
+  id: string;
+  name: string;
+  nameHi?: string | null;
+  slug: string;
+  category: string;
+  benefitSummary: string;
+  benefitSummaryHi?: string | null;
+  benefitAmount?: string | null;
+  applicationUrl: string;
+  missingFields: string[];
+  passedCount: number;
+  totalRequired: number;
+}
+
+export interface PartialMatch {
+  id: string;
+  name: string;
+  nameHi?: string | null;
+  slug: string;
+  category: string;
+  benefitSummary: string;
+  benefitSummaryHi?: string | null;
+  benefitAmount?: string | null;
+  applicationUrl: string;
+  passedCount: number;
+  totalRequired: number;
+  matchPercentage: number;
+  failedRules: RuleResult[];
 }
 
 export interface EligibilityResponse {
@@ -48,6 +84,12 @@ export interface EligibilityResponse {
   profile: UserProfile;
   totalSchemesChecked: number;
   matchedCount: number;
+  potentialCount: number;
+  partialCount: number;
   schemes: MatchedScheme[];
+  potentialMatches: PotentialMatch[];
+  partialMatches: PartialMatch[];
+  missingProfileFields: string[];
+  profileCompleteness: number;
   checkedAt: string;
 }
