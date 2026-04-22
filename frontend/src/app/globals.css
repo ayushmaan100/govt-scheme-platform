@@ -1,0 +1,64 @@
+/* src/app/globals.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sora: 'Sora', sans-serif;
+  --font-noto: 'Noto Sans Devanagari', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sora);
+  background-color: #0a1628;
+  color: #e8edf5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hindi text uses Noto Sans */
+.hindi {
+  font-family: var(--font-noto);
+}
+
+/* Shimmer loading effect */
+.shimmer-card {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a1628; }
+::-webkit-scrollbar-thumb { background: #2a3f5f; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #f06200; }
+
+/* Focus ring override for accessibility */
+*:focus-visible {
+  outline: 2px solid #ff7d0a;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Stagger animation delay utilities */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
